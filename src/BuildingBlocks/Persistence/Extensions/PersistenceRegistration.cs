@@ -33,6 +33,13 @@ public static class PersistenceRegistration
         services.TryAddScoped<AuditingInterceptor>();
         services.TryAddScoped<SoftDeleteInterceptor>();
         services.TryAddScoped<DomainEventDispatchInterceptor>();
+        // Explicit factory: IAuditSink is optional (only the Auditing module supplies one) and the
+        // container will not satisfy a nullable constructor parameter on its own.
+        services.TryAddScoped(provider => new AuditTrailInterceptor(
+            provider.GetService<Core.Contracts.IAuditSink>(),
+            provider.GetRequiredService<Core.Contracts.ICurrentUser>(),
+            provider.GetRequiredService<Core.Contracts.IRequestContext>(),
+            provider.GetRequiredService<TimeProvider>()));
 
         _ = configuration;
         return services;
@@ -42,7 +49,11 @@ public static class PersistenceRegistration
     /// Registers a module <c>DbContext</c> against the single connection string, wiring the audit,
     /// tenant, soft delete and domain event interceptors.
     /// </summary>
-    /// <typeparam name="TContext">The module context type.</typeparam>
+    /// <typeparam name="TContext">
+    /// The module context type. Normally a <see cref="BaseDbContext"/>, but the Identity module's
+    /// context has to derive from <c>IdentityDbContext</c> instead and applies the same conventions
+    /// by hand, so the constraint is only <see cref="DbContext"/>.
+    /// </typeparam>
     /// <param name="services">Service collection.</param>
     /// <returns>The service collection, for chaining.</returns>
     /// <remarks>
@@ -51,7 +62,7 @@ public static class PersistenceRegistration
     /// therefore be its own process with its own migrator.
     /// </remarks>
     public static IServiceCollection AddHeroDbContext<TContext>(this IServiceCollection services)
-        where TContext : BaseDbContext
+        where TContext : DbContext
     {
         ArgumentNullException.ThrowIfNull(services);
 
@@ -75,6 +86,7 @@ public static class PersistenceRegistration
 
             builder.AddInterceptors(
                 serviceProvider.GetRequiredService<AuditingInterceptor>(),
+                serviceProvider.GetRequiredService<AuditTrailInterceptor>(),
                 serviceProvider.GetRequiredService<SoftDeleteInterceptor>(),
                 serviceProvider.GetRequiredService<DomainEventDispatchInterceptor>());
         });

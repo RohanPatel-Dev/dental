@@ -1,4 +1,4 @@
-namespace Dental.Framework.Persistence.Pagination;
+namespace Dental.Framework.Shared.Pagination;
 
 /// <summary>
 /// Implemented by every paginated query. The architecture tests require a matching validator for

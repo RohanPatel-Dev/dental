@@ -1,4 +1,4 @@
-namespace Dental.Framework.Persistence.Pagination;
+namespace Dental.Framework.Shared.Pagination;
 
 /// <summary>Standard envelope for every paginated query response.</summary>
 /// <typeparam name="T">Item type.</typeparam>

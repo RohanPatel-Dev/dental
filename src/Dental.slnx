@@ -33,4 +33,26 @@
   <Folder Name="/BuildingBlocks/Web/">
     <Project Path="BuildingBlocks/Web/Dental.Framework.Web.csproj" />
   </Folder>
+  <Folder Name="/Modules/" />
+  <Folder Name="/Modules/Auditing/" />
+  <Folder Name="/Modules/Auditing/Modules.Auditing.Contracts/">
+    <Project Path="Modules/Auditing/Modules.Auditing.Contracts/Dental.Modules.Auditing.Contracts.csproj" />
+  </Folder>
+  <Folder Name="/Modules/Auditing/Modules.Auditing/">
+    <Project Path="Modules/Auditing/Modules.Auditing/Dental.Modules.Auditing.csproj" />
+  </Folder>
+  <Folder Name="/Modules/Identity/" />
+  <Folder Name="/Modules/Identity/Modules.Identity.Contracts/">
+    <Project Path="Modules/Identity/Modules.Identity.Contracts/Dental.Modules.Identity.Contracts.csproj" />
+  </Folder>
+  <Folder Name="/Modules/Identity/Modules.Identity/">
+    <Project Path="Modules/Identity/Modules.Identity/Dental.Modules.Identity.csproj" />
+  </Folder>
+  <Folder Name="/Modules/Tenancy/" />
+  <Folder Name="/Modules/Tenancy/Modules.Tenancy.Contracts/">
+    <Project Path="Modules/Tenancy/Modules.Tenancy.Contracts/Dental.Modules.Tenancy.Contracts.csproj" />
+  </Folder>
+  <Folder Name="/Modules/Tenancy/Modules.Tenancy/">
+    <Project Path="Modules/Tenancy/Modules.Tenancy/Dental.Modules.Tenancy.csproj" />
+  </Folder>
 </Solution>

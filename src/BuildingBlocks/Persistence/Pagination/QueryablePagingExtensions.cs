@@ -1,5 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 
+using Dental.Framework.Shared.Pagination;
+
 namespace Dental.Framework.Persistence.Pagination;
 
 /// <summary>Turns a composed <see cref="IQueryable{T}"/> into a <see cref="PagedResponse{T}"/>.</summary>

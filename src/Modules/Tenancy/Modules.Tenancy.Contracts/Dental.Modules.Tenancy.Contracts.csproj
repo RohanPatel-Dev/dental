@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <RootNamespace>Dental.Modules.Tenancy.Contracts</RootNamespace>
+    <AssemblyName>Dental.Modules.Tenancy.Contracts</AssemblyName>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <NoWarn>$(NoWarn);CA1034;CA1724;CA2227</NoWarn>
+  </PropertyGroup>
+
+  <!--
+    A Contracts project references ONLY Shared, Eventing.Abstractions and Mediator.Abstractions.
+    ContractsPurityTests enforces this: anything heavier leaks into every module that consumes it.
+  -->
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\BuildingBlocks\Eventing.Abstractions\Dental.Framework.Eventing.Abstractions.csproj" />
+    <ProjectReference Include="..\..\..\BuildingBlocks\Shared\Dental.Framework.Shared.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Mediator.Abstractions" />
+  </ItemGroup>
+
+</Project>

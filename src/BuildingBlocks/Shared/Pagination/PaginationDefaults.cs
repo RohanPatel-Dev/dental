@@ -1,4 +1,4 @@
-namespace Dental.Framework.Persistence.Pagination;
+namespace Dental.Framework.Shared.Pagination;
 
 /// <summary>Shared pagination bounds. Validators reference these instead of hard coding numbers.</summary>
 public static class PaginationDefaults
