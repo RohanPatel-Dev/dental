@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <RootNamespace>Dental.Framework.Eventing.Abstractions</RootNamespace>
+    <AssemblyName>Dental.Framework.Eventing.Abstractions</AssemblyName>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <NoWarn>$(NoWarn);CA1040;CA1711</NoWarn>
+  </PropertyGroup>
+
+</Project>

@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <RootNamespace>Dental.Framework.Core</RootNamespace>
+    <AssemblyName>Dental.Framework.Core</AssemblyName>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <NoWarn>$(NoWarn);CA1040;CA1062;CA1848;CA2227;CA1034;CA1716;CA1030</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Mediator.Abstractions" />
+  </ItemGroup>
+
+</Project>

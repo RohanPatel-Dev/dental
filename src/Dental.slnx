@@ -1,0 +1,36 @@
+<Solution>
+  <Folder Name="/BuildingBlocks/" />
+  <Folder Name="/BuildingBlocks/Caching/">
+    <Project Path="BuildingBlocks/Caching/Dental.Framework.Caching.csproj" />
+  </Folder>
+  <Folder Name="/BuildingBlocks/Core/">
+    <Project Path="BuildingBlocks/Core/Dental.Framework.Core.csproj" />
+  </Folder>
+  <Folder Name="/BuildingBlocks/Eventing.Abstractions/">
+    <Project Path="BuildingBlocks/Eventing.Abstractions/Dental.Framework.Eventing.Abstractions.csproj" />
+  </Folder>
+  <Folder Name="/BuildingBlocks/Eventing/">
+    <Project Path="BuildingBlocks/Eventing/Dental.Framework.Eventing.csproj" />
+  </Folder>
+  <Folder Name="/BuildingBlocks/Jobs/">
+    <Project Path="BuildingBlocks/Jobs/Dental.Framework.Jobs.csproj" />
+  </Folder>
+  <Folder Name="/BuildingBlocks/Mailing/">
+    <Project Path="BuildingBlocks/Mailing/Dental.Framework.Mailing.csproj" />
+  </Folder>
+  <Folder Name="/BuildingBlocks/Persistence/">
+    <Project Path="BuildingBlocks/Persistence/Dental.Framework.Persistence.csproj" />
+  </Folder>
+  <Folder Name="/BuildingBlocks/Quota/">
+    <Project Path="BuildingBlocks/Quota/Dental.Framework.Quota.csproj" />
+  </Folder>
+  <Folder Name="/BuildingBlocks/Shared/">
+    <Project Path="BuildingBlocks/Shared/Dental.Framework.Shared.csproj" />
+  </Folder>
+  <Folder Name="/BuildingBlocks/Storage/">
+    <Project Path="BuildingBlocks/Storage/Dental.Framework.Storage.csproj" />
+  </Folder>
+  <Folder Name="/BuildingBlocks/Web/">
+    <Project Path="BuildingBlocks/Web/Dental.Framework.Web.csproj" />
+  </Folder>
+</Solution>

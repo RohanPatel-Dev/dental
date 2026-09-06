@@ -1,0 +1,33 @@
+# Build output
+bin/
+obj/
+[Dd]ebug/
+[Rr]elease/
+artifacts/
+TestResults/
+*.user
+*.suo
+
+# Local storage for the local storage provider
+storage/
+
+# Node
+node_modules/
+dist/
+.vite/
+playwright-report/
+test-results/
+blob-report/
+.playwright/
+
+# Editors
+.vs/
+.idea/
+*.swp
+.DS_Store
+
+# Secrets and local overrides
+appsettings.Local.json
+.env
+.env.local
+*.pfx
