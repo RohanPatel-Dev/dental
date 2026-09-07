@@ -1,0 +1,41 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <RootNamespace>Dental.Migrations.PostgreSQL</RootNamespace>
+    <AssemblyName>Dental.Migrations.PostgreSQL</AssemblyName>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <!--
+      Generated migration code is not ours to style. Documentation and most analyzers are off here;
+      the schema itself is reviewed in the migration diff, not in the C# that emits it.
+    -->
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <AnalysisMode>Default</AnalysisMode>
+    <NoWarn>$(NoWarn);CA1062;CA1861;CA1002;CS1591;S1192;S3903;S125</NoWarn>
+  </PropertyGroup>
+
+  <!--
+    ALL migrations for the main host live here, one folder per module, each with its own
+    ModelSnapshot. Build BEFORE running 'migrations add' - 'migrations remove' works off the
+    snapshot, and a stale snapshot loses work.
+  -->
+  <ItemGroup>
+    <ProjectReference Include="..\..\Modules\Auditing\Modules.Auditing\Dental.Modules.Auditing.csproj" />
+    <ProjectReference Include="..\..\Modules\Billing\Modules.Billing\Dental.Modules.Billing.csproj" />
+    <ProjectReference Include="..\..\Modules\Clinical\Modules.Clinical\Dental.Modules.Clinical.csproj" />
+    <ProjectReference Include="..\..\Modules\Identity\Modules.Identity\Dental.Modules.Identity.csproj" />
+    <ProjectReference Include="..\..\Modules\Patients\Modules.Patients\Dental.Modules.Patients.csproj" />
+    <ProjectReference Include="..\..\Modules\Scheduling\Modules.Scheduling\Dental.Modules.Scheduling.csproj" />
+    <ProjectReference Include="..\..\Modules\Tenancy\Modules.Tenancy\Dental.Modules.Tenancy.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" />
+  </ItemGroup>
+
+</Project>

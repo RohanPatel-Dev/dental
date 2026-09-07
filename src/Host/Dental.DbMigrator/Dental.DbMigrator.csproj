@@ -1,0 +1,48 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>Dental.DbMigrator</RootNamespace>
+    <AssemblyName>Dental.DbMigrator</AssemblyName>
+    <UserSecretsId>dental-api-b2f0a4c1</UserSecretsId>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <NoWarn>$(NoWarn);CA1062;CA1848;CA1031;CA2007;CA1873;CA1515;CA1303</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+
+  <!--
+    The migrator LINKS the API's appsettings files rather than keeping its own copy. Two files that
+    have to agree eventually stop agreeing.
+  -->
+  <ItemGroup>
+    <Content Include="..\Dental.Api\appsettings.json" Link="appsettings.json" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="..\Dental.Api\appsettings.Development.json" Link="appsettings.Development.json" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="..\Dental.Api\appsettings.Production.json" Link="appsettings.Production.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\BuildingBlocks\Web\Dental.Framework.Web.csproj" />
+
+    <ProjectReference Include="..\..\Modules\Auditing\Modules.Auditing\Dental.Modules.Auditing.csproj" />
+    <ProjectReference Include="..\..\Modules\Billing\Modules.Billing\Dental.Modules.Billing.csproj" />
+    <ProjectReference Include="..\..\Modules\Clinical\Modules.Clinical\Dental.Modules.Clinical.csproj" />
+    <ProjectReference Include="..\..\Modules\Identity\Modules.Identity\Dental.Modules.Identity.csproj" />
+    <ProjectReference Include="..\..\Modules\Patients\Modules.Patients\Dental.Modules.Patients.csproj" />
+    <ProjectReference Include="..\..\Modules\Scheduling\Modules.Scheduling\Dental.Modules.Scheduling.csproj" />
+    <ProjectReference Include="..\..\Modules\Tenancy\Modules.Tenancy\Dental.Modules.Tenancy.csproj" />
+
+    <ProjectReference Include="..\Dental.Migrations.PostgreSQL\Dental.Migrations.PostgreSQL.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Mediator.Abstractions" />
+    <PackageReference Include="Mediator.SourceGenerator" PrivateAssets="all" />
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" />
+  </ItemGroup>
+
+</Project>

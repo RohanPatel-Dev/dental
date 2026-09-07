@@ -3,32 +3,29 @@ namespace Dental.Framework.Web.Platform;
 /// <summary>Feature flags for <c>AddHeroPlatform</c>.</summary>
 public sealed class HeroPlatformOptions
 {
-    /// <summary>Registers <c>HybridCache</c> and, when configured, its Redis L2.</summary>
-    public bool EnableCaching { get; set; }
+/*
+ * Caching, storage, mailing, quotas and realtime SERVICES are registered in every host and have no
+ * flag: feature code depends on those abstractions unconditionally, and a handler cannot know which
+ * host loaded it. The flags below turn off expensive or outward-facing behaviour instead.
+ */
 
-    /// <summary>Registers the SMTP mail service.</summary>
-    public bool EnableMailing { get; set; }
-
-    /// <summary>Registers Hangfire's client and server.</summary>
+    /// <summary>
+    /// Runs a Hangfire client and server. When false the host gets a job service whose every method
+    /// throws, so an accidental enqueue from a process that runs no worker fails loudly.
+    /// </summary>
     public bool EnableJobs { get; set; }
 
-    /// <summary>Registers the quota service and enables the enforcement middleware.</summary>
+    /// <summary>
+    /// Enforces per-tenant quotas. When false the quota service answers unlimited and the
+    /// enforcement middleware is not added.
+    /// </summary>
     public bool EnableQuotas { get; set; }
 
     /// <summary>Registers the server-sent-events plumbing.</summary>
     public bool EnableSse { get; set; }
 
-    /// <summary>Registers SignalR services. Mapping the hub is a separate flag.</summary>
-    public bool EnableRealtime { get; set; }
-
-    /// <summary>Registers object storage.</summary>
-    public bool EnableStorage { get; set; } = true;
-
     /// <summary>Registers the rate limiter.</summary>
     public bool EnableRateLimiting { get; set; } = true;
-
-    /// <summary>Registers the idempotency middleware. Requires caching.</summary>
-    public bool EnableIdempotency { get; set; } = true;
 
     /// <summary>Queue name prefix for the RabbitMQ consumer. Defaults to the application name.</summary>
     public string? ConsumerName { get; set; }
@@ -54,6 +51,9 @@ public sealed class HeroPipelineOptions
 
     /// <summary>Maps the Hangfire dashboard.</summary>
     public bool MapJobsDashboard { get; set; } = true;
+
+    /// <summary>Adds the idempotent-replay middleware.</summary>
+    public bool UseIdempotency { get; set; } = true;
 
     /// <summary>Redirects HTTP to HTTPS. Off behind a TLS terminating proxy.</summary>
     public bool UseHttpsRedirection { get; set; } = true;

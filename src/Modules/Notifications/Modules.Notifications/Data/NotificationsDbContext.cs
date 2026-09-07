@@ -20,6 +20,9 @@ public sealed class NotificationsDbContext(
     /// <summary>Queued and sent messages.</summary>
     public DbSet<Notification> Notifications => Set<Notification>();
 
+    /// <summary>This module's own projection of the patient facts it needs to address a message.</summary>
+    public DbSet<PatientContact> PatientContacts => Set<PatientContact>();
+
     /// <inheritdoc />
     protected override string Schema => SchemaName;
 

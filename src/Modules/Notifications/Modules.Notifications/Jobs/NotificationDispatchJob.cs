@@ -2,8 +2,7 @@ using Dental.Framework.Mailing;
 using Dental.Modules.Notifications.Contracts.Dtos;
 using Dental.Modules.Notifications.Data;
 using Dental.Modules.Notifications.Domain;
-using Dental.Modules.Patients.Contracts.Dtos;
-using Dental.Modules.Patients.Contracts.Services;
+using Dental.Modules.Notifications.Services;
 using Hangfire;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -14,14 +13,14 @@ namespace Dental.Modules.Notifications.Jobs;
 /// <summary>Hands due messages to the mail server, re-checking consent immediately before sending.</summary>
 /// <param name="context">The notifications context.</param>
 /// <param name="mailService">SMTP transport.</param>
-/// <param name="patientService">Re-checks consent at send time.</param>
+/// <param name="projection">Re-checks consent at send time, against the local projection.</param>
 /// <param name="options">Notification configuration.</param>
 /// <param name="timeProvider">Clock.</param>
 /// <param name="logger">Logger.</param>
 public sealed class NotificationDispatchJob(
     NotificationsDbContext context,
     IMailService mailService,
-    IPatientService patientService,
+    PatientContactProjection projection,
     IOptions<NotificationOptions> options,
     TimeProvider timeProvider,
     ILogger<NotificationDispatchJob> logger)
@@ -78,11 +77,11 @@ public sealed class NotificationDispatchJob(
     {
         // Consent is re-checked here, not just at queue time: a patient may have withdrawn it in
         // the hours or days since the message was queued.
-        PatientSummaryDto? patient = await patientService
-            .GetSummaryAsync(notification.PatientId, cancellationToken)
+        PatientContact? patient = await projection
+            .FindAsync(notification.PatientId, cancellationToken)
             .ConfigureAwait(false);
 
-        if (patient is null || !patient.HasReminderConsent)
+        if (patient is null || !patient.IsContactable)
         {
             notification.Withdraw(NotificationStatus.SuppressedByConsent);
             logger.LogInformation(

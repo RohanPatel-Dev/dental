@@ -5,13 +5,10 @@ using Microsoft.Extensions.Logging;
 namespace Dental.Framework.Web.Tenancy;
 
 /// <summary>
-/// Re-establishes the ambient tenant for background work, by loading it from the tenant store and
-/// pushing it into Finbuckle's setter.
+/// Loads a tenant from the store and, separately, pushes it into Finbuckle's <c>AsyncLocal</c>.
 /// </summary>
 /// <remarks>
-/// Finbuckle's context is AsyncLocal. Setting it inside an awaited helper that returns before the
-/// caller continues can lose it across the async boundary - which is why callers await this
-/// directly rather than fire-and-forget.
+/// See <see cref="ITenantContextRestorer"/> for why the lookup and the assignment are two calls.
 /// </remarks>
 /// <param name="store">The tenant store.</param>
 /// <param name="setter">Finbuckle's context setter.</param>
@@ -22,7 +19,9 @@ public sealed class TenantContextRestorer(
     ILogger<TenantContextRestorer> logger) : ITenantContextRestorer
 {
     /// <inheritdoc />
-    public async Task RestoreAsync(string tenantId, CancellationToken cancellationToken = default)
+    public async Task<TenantSnapshot?> ResolveAsync(
+        string tenantId,
+        CancellationToken cancellationToken = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(tenantId);
 
@@ -32,12 +31,37 @@ public sealed class TenantContextRestorer(
         if (tenant is null)
         {
             logger.LogWarning(
-                "Tenant {TenantId} was not found in the store; background work will run without "
-                + "a tenant context and tenant filtered queries will fail.",
+                "Tenant {TenantId} was not found in the store; background work will run without a "
+                + "tenant context and tenant filtered queries will fail.",
                 tenantId);
-            return;
+            return null;
         }
 
-        setter.MultiTenantContext = new MultiTenantContext<DentalTenantInfo>(tenant);
+        return new TenantSnapshot(
+            tenant.Id,
+            tenant.Identifier,
+            tenant.Name,
+            tenant.Plan,
+            tenant.TimeZone,
+            tenant.IsActive,
+            tenant.ValidUntil);
+    }
+
+    /// <inheritdoc />
+    public void Apply(TenantSnapshot snapshot)
+    {
+        ArgumentNullException.ThrowIfNull(snapshot);
+
+        setter.MultiTenantContext = new MultiTenantContext<DentalTenantInfo>(
+            new DentalTenantInfo
+            {
+                Id = snapshot.Id,
+                Identifier = snapshot.Identifier,
+                Name = snapshot.Name,
+                Plan = snapshot.Plan,
+                TimeZone = snapshot.TimeZone,
+                IsActive = snapshot.IsActive,
+                ValidUntil = snapshot.ValidUntil,
+            });
     }
 }

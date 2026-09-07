@@ -98,6 +98,15 @@ public sealed class GlobalExceptionHandler(
                 Title = "Authentication is required.",
                 Status = (int)HttpStatusCode.Unauthorized,
             },
+
+            // A body ASP.NET could not bind is the caller's mistake, not the server's. Without this
+            // arm it falls through to the catch-all and reports 500 for a malformed request.
+            BadHttpRequestException badRequest => new ProblemDetails
+            {
+                Title = "The request could not be read.",
+                Status = badRequest.StatusCode,
+                Detail = environment.IsDevelopment() ? badRequest.Message : null,
+            },
             _ => new ProblemDetails
             {
                 Title = "An unexpected error occurred.",

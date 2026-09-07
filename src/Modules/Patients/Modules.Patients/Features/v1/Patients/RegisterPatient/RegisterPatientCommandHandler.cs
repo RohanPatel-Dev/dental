@@ -22,7 +22,7 @@ namespace Dental.Modules.Patients.Features.v1.Patients.RegisterPatient;
 public sealed class RegisterPatientCommandHandler(
     PatientsDbContext context,
     ChartNumberGenerator chartNumbers,
-    IOutboxStore outbox,
+    IOutboxStore<PatientsDbContext> outbox,
     IQuotaService quotaService,
     IMultiTenantContextAccessor tenantContextAccessor,
     TimeProvider timeProvider) : ICommandHandler<RegisterPatientCommand, PatientDto>
@@ -71,7 +71,13 @@ public sealed class RegisterPatientCommandHandler(
         context.Patients.Add(patient);
 
         await outbox.AddAsync(
-                new PatientRegisteredIntegrationEvent(patient.Id, patient.ChartNumber, patient.FullName)
+                new PatientRegisteredIntegrationEvent(
+                    patient.Id,
+                    patient.ChartNumber,
+                    patient.FullName,
+                    patient.Email,
+                    patient.PhoneNumber,
+                    patient.HasReminderConsent)
                 {
                     TenantId = tenantId,
                     Source = nameof(Patients),

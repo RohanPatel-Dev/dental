@@ -80,7 +80,7 @@ public static class EventingRegistration
     {
         ArgumentNullException.ThrowIfNull(services);
 
-        services.AddScoped<IOutboxStore, OutboxStore<TContext>>();
+        services.AddScoped<IOutboxStore<TContext>, OutboxStore<TContext>>();
         services.AddScoped<IInboxStore, InboxStore<TContext>>();
         services.AddScoped<IOutboxSweeper, OutboxSweeper<TContext>>();
 

@@ -17,7 +17,7 @@ namespace Dental.Modules.Clinical.Features.v1.TreatmentPlans.AcceptTreatmentPlan
 /// <param name="timeProvider">Clock.</param>
 public sealed class AcceptTreatmentPlanCommandHandler(
     ClinicalDbContext context,
-    IOutboxStore outbox,
+    IOutboxStore<ClinicalDbContext> outbox,
     TimeProvider timeProvider) : ICommandHandler<AcceptTreatmentPlanCommand, TreatmentPlanDto>
 {
     /// <inheritdoc />

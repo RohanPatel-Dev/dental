@@ -55,6 +55,7 @@ public sealed class PatientsModule : IModule
         builder.Services.AddIntegrationEventType<PatientRegisteredIntegrationEvent>();
         builder.Services.AddIntegrationEventType<PatientErasureRequestedIntegrationEvent>();
         builder.Services.AddIntegrationEventType<PatientConsentChangedIntegrationEvent>();
+        builder.Services.AddIntegrationEventType<PatientContactChangedIntegrationEvent>();
 
         builder.Services.AddHealthChecks()
             .AddDbContextCheck<PatientsDbContext>("db:patients", tags: [HealthEndpoints.ReadyTag]);

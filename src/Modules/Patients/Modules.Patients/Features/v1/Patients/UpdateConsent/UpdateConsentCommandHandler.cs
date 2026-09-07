@@ -18,7 +18,7 @@ namespace Dental.Modules.Patients.Features.v1.Patients.UpdateConsent;
 /// <param name="timeProvider">Clock.</param>
 public sealed class UpdateConsentCommandHandler(
     PatientsDbContext context,
-    IOutboxStore outbox,
+    IOutboxStore<PatientsDbContext> outbox,
     TimeProvider timeProvider) : ICommandHandler<UpdateConsentCommand, PatientDto>
 {
     /// <inheritdoc />

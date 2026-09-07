@@ -1,0 +1,31 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <RootNamespace>Dental.Notifications.Migrations.PostgreSQL</RootNamespace>
+    <AssemblyName>Dental.Notifications.Migrations.PostgreSQL</AssemblyName>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <AnalysisMode>Default</AnalysisMode>
+    <NoWarn>$(NoWarn);CA1062;CA1861;CA1002;CS1591;S1192;S3903;S125</NoWarn>
+  </PropertyGroup>
+
+  <!--
+    The extracted host's OWN migrations project. It exists because AddHeroDbContext resolves a
+    single process-wide DatabaseOptions:MigrationsAssembly - so a host with a different migration
+    set has to be a different process with a different migrations assembly and its own migrator.
+  -->
+  <ItemGroup>
+    <ProjectReference Include="..\..\Modules\Notifications\Modules.Notifications\Dental.Modules.Notifications.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" />
+  </ItemGroup>
+
+</Project>

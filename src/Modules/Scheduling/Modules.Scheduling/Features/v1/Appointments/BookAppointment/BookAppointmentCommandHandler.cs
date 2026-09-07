@@ -27,7 +27,7 @@ public sealed class BookAppointmentCommandHandler(
     IPatientService patientService,
     SlotAvailabilityChecker availability,
     AppointmentService appointments,
-    IOutboxStore outbox,
+    IOutboxStore<SchedulingDbContext> outbox,
     IRealtimeNotifier realtime,
     IMultiTenantContextAccessor tenantContextAccessor)
     : ICommandHandler<BookAppointmentCommand, AppointmentDto>

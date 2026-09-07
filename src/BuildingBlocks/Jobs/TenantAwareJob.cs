@@ -25,7 +25,19 @@ public abstract class TenantAwareJob(IServiceScopeFactory scopeFactory)
         ITenantContextRestorer restorer =
             scope.ServiceProvider.GetRequiredService<ITenantContextRestorer>();
 
-        await restorer.RestoreAsync(tenantId, cancellationToken).ConfigureAwait(false);
+        // Resolve, then apply IN THIS FRAME: an AsyncLocal set inside an awaited helper is invisible
+        // to the caller, so the job body would otherwise run with no ambient tenant.
+        TenantSnapshot? tenant = await restorer.ResolveAsync(tenantId, cancellationToken)
+            .ConfigureAwait(false);
+
+        if (tenant is null)
+        {
+            throw new InvalidOperationException(
+                $"Tenant '{tenantId}' was not found; the job cannot run without a tenant context.");
+        }
+
+        restorer.Apply(tenant);
+
         await ExecuteAsync(scope.ServiceProvider, tenantId, cancellationToken).ConfigureAwait(false);
     }
 

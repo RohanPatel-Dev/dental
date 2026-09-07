@@ -23,7 +23,7 @@ namespace Dental.Modules.Scheduling.Features.v1.Appointments.CompleteAppointment
 public sealed class CompleteAppointmentCommandHandler(
     SchedulingDbContext context,
     AppointmentService appointments,
-    IOutboxStore outbox,
+    IOutboxStore<SchedulingDbContext> outbox,
     IRealtimeNotifier realtime,
     TimeProvider timeProvider) : ICommandHandler<CompleteAppointmentCommand, AppointmentDto>
 {

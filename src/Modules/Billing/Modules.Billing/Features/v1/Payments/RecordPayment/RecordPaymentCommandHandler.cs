@@ -16,7 +16,7 @@ namespace Dental.Modules.Billing.Features.v1.Payments.RecordPayment;
 /// <param name="timeProvider">Clock.</param>
 public sealed class RecordPaymentCommandHandler(
     BillingDbContext context,
-    IOutboxStore outbox,
+    IOutboxStore<BillingDbContext> outbox,
     TimeProvider timeProvider) : ICommandHandler<RecordPaymentCommand, PaymentDto>
 {
     /// <inheritdoc />

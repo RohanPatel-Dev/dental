@@ -19,7 +19,7 @@ namespace Dental.Modules.Tenancy.Features.v1.Tenants.SetTenantStatus;
 /// <param name="cache">Shared cache, invalidated after the write.</param>
 public sealed class SetTenantStatusCommandHandler(
     TenancyDbContext context,
-    IOutboxStore outbox,
+    IOutboxStore<TenancyDbContext> outbox,
     HybridCache cache) : ICommandHandler<SetTenantStatusCommand, TenantDto>
 {
     /// <inheritdoc />

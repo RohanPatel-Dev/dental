@@ -19,7 +19,7 @@ public sealed class OutboxStore<TContext>(
     TContext context,
     IMultiTenantContextAccessor tenantContextAccessor,
     IRequestContext requestContext,
-    TimeProvider timeProvider) : IOutboxStore
+    TimeProvider timeProvider) : IOutboxStore<TContext>
     where TContext : DbContext
 {
     /// <inheritdoc />

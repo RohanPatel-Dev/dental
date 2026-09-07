@@ -113,11 +113,6 @@ public sealed class Invoice : AggregateRoot, IAuditableEntity, ISoftDeletable
         Payments.Add(payment);
 
         Status = Balance <= 0 ? InvoiceStatus.Paid : InvoiceStatus.PartiallyPaid;
-
-        if (Status == InvoiceStatus.Paid)
-        {
-            RaiseDomainEvent(new InvoiceSettledDomainEvent(Id, PatientId, Total, Currency));
-        }
     }
 
     /// <summary>Cancels the invoice without payment.</summary>
@@ -137,14 +132,3 @@ public sealed class Invoice : AggregateRoot, IAuditableEntity, ISoftDeletable
         VoidReason = reason;
     }
 }
-
-/// <summary>Raised in-process when an invoice is settled in full.</summary>
-/// <param name="InvoiceId">The invoice.</param>
-/// <param name="PatientId">Patient billed.</param>
-/// <param name="Total">Amount settled.</param>
-/// <param name="Currency">ISO 4217 currency.</param>
-public sealed record InvoiceSettledDomainEvent(
-    Guid InvoiceId,
-    Guid PatientId,
-    decimal Total,
-    string Currency) : DomainEvent;

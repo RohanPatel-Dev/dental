@@ -36,6 +36,8 @@ public sealed class InboxStore<TContext>(
             return false;
         }
 
+        // Staged only. The handler's own SaveChanges commits this row alongside its work, so a
+        // handler that throws leaves no claim behind and the redelivery retries it.
         set.Add(new InboxMessage
         {
             EventId = eventId,
@@ -45,25 +47,28 @@ public sealed class InboxStore<TContext>(
             TenantId = string.Empty,
         });
 
+        return true;
+    }
+
+    /// <inheritdoc />
+    public async Task CommitAsync(CancellationToken cancellationToken = default)
+    {
+        if (!context.ChangeTracker.HasChanges())
+        {
+            return;
+        }
+
         try
         {
             await context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
-            return true;
         }
         catch (DbUpdateException exception)
         {
             // Two deliveries raced on the same event and handler. The unique index rejected the
-            // loser, which then simply skips the handler.
+            // loser; the work was done twice at most once, which is what the inbox exists to bound.
             logger.LogDebug(
                 exception,
-                "Inbox claim lost a race for event {EventId} and handler {HandlerName}.",
-                eventId,
-                handlerName);
-
-            context.Entry(set.Local.First(m => m.EventId == eventId && m.HandlerName == handlerName))
-                .State = EntityState.Detached;
-
-            return false;
+                "Inbox claim lost a race and was rejected by the unique index.");
         }
     }
 }

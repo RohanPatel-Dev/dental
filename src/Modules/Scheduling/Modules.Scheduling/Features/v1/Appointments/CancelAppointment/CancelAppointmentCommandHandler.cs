@@ -20,7 +20,7 @@ namespace Dental.Modules.Scheduling.Features.v1.Appointments.CancelAppointment;
 public sealed class CancelAppointmentCommandHandler(
     SchedulingDbContext context,
     AppointmentService appointments,
-    IOutboxStore outbox,
+    IOutboxStore<SchedulingDbContext> outbox,
     IRealtimeNotifier realtime) : ICommandHandler<CancelAppointmentCommand, AppointmentDto>
 {
     /// <inheritdoc />

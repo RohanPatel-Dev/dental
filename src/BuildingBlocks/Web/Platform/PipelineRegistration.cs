@@ -65,6 +65,8 @@ public static class PipelineRegistration
         HeroPipelineOptions options = new();
         configure?.Invoke(options);
 
+        HeroPlatformFeatures features = app.Services.GetRequiredService<HeroPlatformFeatures>();
+
         app.UseExceptionHandler();
         app.UseResponseCompression();
 
@@ -93,17 +95,20 @@ public static class PipelineRegistration
         // Module middleware runs here: after authentication, before authorization.
         app.UseModuleMiddlewares();
 
-        if (app.Configuration.GetValue("RateLimitingOptions:Enabled", defaultValue: true))
+        if (features.RateLimiting
+            && app.Configuration.GetValue("RateLimitingOptions:Enabled", defaultValue: true))
         {
             app.UseRateLimiter();
         }
 
-        if (app.Services.GetService<Framework.Quota.IQuotaService>() is not null)
+        // AFTER authentication, because it needs a resolved tenant, and after the rate limiter, so a
+        // caller hitting a burst limit does not also burn quota.
+        if (features.Quotas)
         {
             app.UseMiddleware<QuotaEnforcementMiddleware>();
         }
 
-        if (app.Services.GetService<Microsoft.Extensions.Caching.Hybrid.HybridCache>() is not null)
+        if (options.UseIdempotency)
         {
             app.UseMiddleware<IdempotencyMiddleware>();
         }
@@ -119,17 +124,17 @@ public static class PipelineRegistration
             app.MapScalarApiReference(scalar => scalar.WithTitle("Dental API"));
         }
 
-        if (options.MapRealtime && app.Services.GetService<IRealtimeNotifier>() is not null)
+        if (options.MapRealtime)
         {
             app.MapHub<AppHub>(ApiRoutes.RealtimeHub);
         }
 
-        if (options.MapSse && app.Services.GetService<SseTokenStore>() is not null)
+        if (options.MapSse && features.Sse)
         {
             app.MapServerSentEvents();
         }
 
-        if (options.MapJobsDashboard && app.Services.GetService<IJobService>() is HangfireJobService)
+        if (options.MapJobsDashboard && features.Jobs)
         {
             MapJobsDashboard(app);
         }

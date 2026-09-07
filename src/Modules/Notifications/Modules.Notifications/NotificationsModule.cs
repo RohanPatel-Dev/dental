@@ -53,6 +53,7 @@ public sealed class NotificationsModule : IModule
         builder.Services.AddScoped<IDbInitializer, NotificationsDbInitializer>();
 
         builder.Services.AddSingleton<NotificationComposer>();
+        builder.Services.AddScoped<PatientContactProjection>();
         builder.Services.AddScoped<NotificationQueue>();
         builder.Services.AddScoped<NotificationDispatchJob>();
 

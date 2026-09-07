@@ -1,20 +1,21 @@
 using Dental.Modules.Notifications.Contracts.Dtos;
 using Dental.Modules.Notifications.Data;
 using Dental.Modules.Notifications.Domain;
-using Dental.Modules.Patients.Contracts.Dtos;
-using Dental.Modules.Patients.Contracts.Services;
 using Microsoft.Extensions.Logging;
 
 namespace Dental.Modules.Notifications.Services;
 
 /// <summary>Queues a message after checking consent and that a contact address exists.</summary>
 /// <param name="context">The notifications context.</param>
-/// <param name="patientService">Resolves the recipient through the Patients contract.</param>
+/// <param name="projection">
+/// The module's own patient projection. Deliberately NOT <c>IPatientService</c>: this module runs
+/// in its own process, where that service does not exist.
+/// </param>
 /// <param name="composer">Renders the message.</param>
 /// <param name="logger">Logger.</param>
 public sealed class NotificationQueue(
     NotificationsDbContext context,
-    IPatientService patientService,
+    PatientContactProjection projection,
     NotificationComposer composer,
     ILogger<NotificationQueue> logger)
 {
@@ -39,38 +40,31 @@ public sealed class NotificationQueue(
         NotificationKind kind,
         Guid? subjectId,
         DateTimeOffset scheduledFor,
-        Func<PatientSummaryDto, NotificationComposer, (string Subject, string Body)> render,
+        Func<PatientContact, NotificationComposer, (string Subject, string Body)> render,
         string tenantId,
         CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(render);
 
-        PatientSummaryDto? patient = await patientService
-            .GetSummaryAsync(patientId, cancellationToken)
+        PatientContact? patient = await projection.FindAsync(patientId, cancellationToken)
             .ConfigureAwait(false);
 
         if (patient is null)
         {
+            // The projection has not caught up, or this host was deployed without a backfill.
+            // Declining to send is the safe failure: the alternative is mailing an address the
+            // module has not been told about.
             logger.LogWarning(
-                "Not queueing a {Kind}: patient {PatientId} was not found.",
+                "Not queueing a {Kind}: patient {PatientId} is not in the local projection.",
                 NotificationComposer.Describe(kind),
                 patientId);
             return null;
         }
 
-        if (!patient.HasReminderConsent)
+        if (!patient.IsContactable)
         {
             logger.LogInformation(
-                "Not queueing a {Kind} for patient {PatientId}: no contact consent.",
-                NotificationComposer.Describe(kind),
-                patientId);
-            return null;
-        }
-
-        if (string.IsNullOrWhiteSpace(patient.Email))
-        {
-            logger.LogInformation(
-                "Not queueing a {Kind} for patient {PatientId}: no email address on file.",
+                "Not queueing a {Kind} for patient {PatientId}: no consent or no address on file.",
                 NotificationComposer.Describe(kind),
                 patientId);
             return null;
@@ -87,7 +81,7 @@ public sealed class NotificationQueue(
             ScheduledFor = scheduledFor,
             Subject = subject,
             Body = body,
-            Recipient = patient.Email,
+            Recipient = patient.Email!,
             TenantId = tenantId,
         };
 

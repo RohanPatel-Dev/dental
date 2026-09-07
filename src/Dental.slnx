@@ -33,6 +33,15 @@
   <Folder Name="/BuildingBlocks/Web/">
     <Project Path="BuildingBlocks/Web/Dental.Framework.Web.csproj" />
   </Folder>
+  <Folder Name="/Host/">
+    <Project Path="Host/Dental.Api/Dental.Api.csproj" />
+    <Project Path="Host/Dental.AppHost/Dental.AppHost.csproj" />
+    <Project Path="Host/Dental.DbMigrator/Dental.DbMigrator.csproj" />
+    <Project Path="Host/Dental.Migrations.PostgreSQL/Dental.Migrations.PostgreSQL.csproj" />
+    <Project Path="Host/Dental.Notifications.Migrations.PostgreSQL/Dental.Notifications.Migrations.PostgreSQL.csproj" />
+    <Project Path="Host/Dental.NotificationsHost/Dental.NotificationsHost.csproj" />
+    <Project Path="Host/Dental.NotificationsMigrator/Dental.NotificationsMigrator.csproj" />
+  </Folder>
   <Folder Name="/Modules/" />
   <Folder Name="/Modules/Auditing/" />
   <Folder Name="/Modules/Auditing/Modules.Auditing.Contracts/">

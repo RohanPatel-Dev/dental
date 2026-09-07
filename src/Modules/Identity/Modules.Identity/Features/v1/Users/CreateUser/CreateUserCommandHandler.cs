@@ -25,7 +25,7 @@ namespace Dental.Modules.Identity.Features.v1.Users.CreateUser;
 public sealed class CreateUserCommandHandler(
     UserManager<DentalUser> userManager,
     IdentityModuleDbContext context,
-    IOutboxStore outbox,
+    IOutboxStore<IdentityModuleDbContext> outbox,
     IQuotaService quotaService,
     IMultiTenantContextAccessor tenantContextAccessor,
     HybridCache cache) : ICommandHandler<CreateUserCommand, UserDto>

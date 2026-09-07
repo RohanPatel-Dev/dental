@@ -4,7 +4,7 @@ namespace Dental.Framework.Eventing.Bus;
 
 /// <summary>
 /// Transport for integration events. Only the outbox dispatcher calls this - feature code publishes
-/// through <see cref="Outbox.IOutboxStore"/>.
+/// through <c>IOutboxStore&lt;TContext&gt;</c>.
 /// </summary>
 public interface IEventBus
 {

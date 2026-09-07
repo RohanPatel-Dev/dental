@@ -1,5 +1,7 @@
 using Dental.Framework.Core.Exceptions;
+using Dental.Framework.Eventing.Outbox;
 using Dental.Modules.Patients.Contracts.Dtos;
+using Dental.Modules.Patients.Contracts.Events;
 using Dental.Modules.Patients.Contracts.v1.Patients.UpdatePatient;
 using Dental.Modules.Patients.Data;
 using Dental.Modules.Patients.Domain;
@@ -10,7 +12,8 @@ namespace Dental.Modules.Patients.Features.v1.Patients.UpdatePatient;
 
 /// <summary>Amends a patient record.</summary>
 /// <param name="context">The patients context.</param>
-public sealed class UpdatePatientCommandHandler(PatientsDbContext context)
+/// <param name="outbox">Outbox writer.</param>
+public sealed class UpdatePatientCommandHandler(PatientsDbContext context, IOutboxStore<PatientsDbContext> outbox)
     : ICommandHandler<UpdatePatientCommand, PatientDto>
 {
     /// <inheritdoc />
@@ -38,6 +41,21 @@ public sealed class UpdatePatientCommandHandler(PatientsDbContext context)
         patient.Status = command.Status;
         patient.PreferredProviderId = command.PreferredProviderId;
         patient.Allergies = [.. command.Allergies];
+
+        // Announced so that projections in other processes - the Notifications host keeps one -
+        // do not go on addressing the patient by an old name or mailing an old address.
+        await outbox.AddAsync(
+                new PatientContactChangedIntegrationEvent(
+                    patient.Id,
+                    patient.FullName,
+                    patient.Email,
+                    patient.PhoneNumber)
+                {
+                    TenantId = patient.TenantId,
+                    Source = nameof(Patients),
+                },
+                cancellationToken)
+            .ConfigureAwait(false);
 
         await context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
 

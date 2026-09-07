@@ -17,7 +17,7 @@ namespace Dental.Modules.Billing.Features.v1.Invoices.IssueInvoice;
 /// <param name="timeProvider">Clock.</param>
 public sealed class IssueInvoiceCommandHandler(
     BillingDbContext context,
-    IOutboxStore outbox,
+    IOutboxStore<BillingDbContext> outbox,
     TimeProvider timeProvider) : ICommandHandler<IssueInvoiceCommand, InvoiceDto>
 {
     /// <inheritdoc />

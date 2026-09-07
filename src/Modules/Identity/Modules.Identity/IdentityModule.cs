@@ -1,3 +1,4 @@
+using Dental.Framework.Core.Contracts;
 using Dental.Framework.Eventing.Extensions;
 using Dental.Framework.Persistence.Extensions;
 using Dental.Framework.Persistence.Initialization;
@@ -26,6 +27,7 @@ using Dental.Modules.Identity.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 
 [assembly: FshModule(typeof(Dental.Modules.Identity.IdentityModule), 200)]
@@ -73,6 +75,11 @@ public sealed class IdentityModule : IModule
             .AddDefaultTokenProviders();
 
         builder.Services.AddScoped<IUserService, UserService>();
+
+        // Replaces the framework's claims-reading fallback: this one expands the caller's roles into
+        // their permission set, served from the cache.
+        builder.Services.Replace(
+            ServiceDescriptor.Scoped<IPermissionProvider, IdentityPermissionProvider>());
         builder.Services.AddScoped<UserService>();
         builder.Services.AddScoped<IdentitySeeder>();
         builder.Services.AddSingleton<TokenService>();

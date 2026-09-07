@@ -1,0 +1,36 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>Dental.NotificationsMigrator</RootNamespace>
+    <AssemblyName>Dental.NotificationsMigrator</AssemblyName>
+    <UserSecretsId>dental-notifications-9c17d3ee</UserSecretsId>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <NoWarn>$(NoWarn);CA1062;CA1848;CA1031;CA2007;CA1873;CA1515;CA1303</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="..\Dental.NotificationsHost\appsettings.json" Link="appsettings.json" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="..\Dental.NotificationsHost\appsettings.Development.json" Link="appsettings.Development.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\BuildingBlocks\Web\Dental.Framework.Web.csproj" />
+    <ProjectReference Include="..\..\Modules\Notifications\Modules.Notifications\Dental.Modules.Notifications.csproj" />
+    <ProjectReference Include="..\..\Modules\Tenancy\Modules.Tenancy\Dental.Modules.Tenancy.csproj" />
+    <ProjectReference Include="..\Dental.Notifications.Migrations.PostgreSQL\Dental.Notifications.Migrations.PostgreSQL.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Mediator.Abstractions" />
+    <PackageReference Include="Mediator.SourceGenerator" PrivateAssets="all" />
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" />
+  </ItemGroup>
+
+</Project>

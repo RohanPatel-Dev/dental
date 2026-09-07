@@ -41,8 +41,24 @@ public sealed class IntegrationEventDispatcher(
 
         using IServiceScope scope = scopeFactory.CreateScope();
 
-        await RestoreTenantContextAsync(scope.ServiceProvider, integrationEvent.TenantId, cancellationToken)
+        // Resolved here and applied HERE, in this frame: an AsyncLocal written inside an awaited
+        // helper does not flow back to its caller, so restoring the tenant "inside" a helper would
+        // leave every handler below running with no tenant at all.
+        TenantSnapshot? tenant = await ResolveTenantAsync(
+                scope.ServiceProvider,
+                integrationEvent.TenantId,
+                cancellationToken)
             .ConfigureAwait(false);
+
+        if (tenant is not null)
+        {
+            scope.ServiceProvider.GetRequiredService<ITenantContextRestorer>().Apply(tenant);
+
+            logger.LogDebug(
+                "Restored tenant {TenantId} for handlers of {EventType}.",
+                tenant.Id,
+                eventType.Name);
+        }
 
         object[] handlers = [.. scope.ServiceProvider.GetServices(handlerInterface).OfType<object>()];
         if (handlers.Length == 0)
@@ -102,20 +118,27 @@ public sealed class IntegrationEventDispatcher(
         Task task = (Task)method.Invoke(handler, [integrationEvent, cancellationToken])!;
         await task.ConfigureAwait(false);
 
+        // The handler normally saves the claim alongside its own work. This covers a handler that
+        // had nothing to write, so the claim would otherwise be staged and never persisted.
+        if (inbox is not null)
+        {
+            await inbox.CommitAsync(cancellationToken).ConfigureAwait(false);
+        }
+
         logger.LogDebug(
             "Handled event {EventId} with {HandlerName}.",
             integrationEvent.Id,
             handlerName);
     }
 
-    private async Task RestoreTenantContextAsync(
+    private async Task<TenantSnapshot?> ResolveTenantAsync(
         IServiceProvider provider,
         string? tenantId,
         CancellationToken cancellationToken)
     {
         if (string.IsNullOrWhiteSpace(tenantId))
         {
-            return;
+            return null;
         }
 
         ITenantContextRestorer? restorer = provider.GetService<ITenantContextRestorer>();
@@ -125,9 +148,9 @@ public sealed class IntegrationEventDispatcher(
                 "No tenant context restorer is registered; tenant {TenantId} could not be restored "
                 + "for the handler scope and tenant filtered queries will fail.",
                 tenantId);
-            return;
+            return null;
         }
 
-        await restorer.RestoreAsync(tenantId, cancellationToken).ConfigureAwait(false);
+        return await restorer.ResolveAsync(tenantId, cancellationToken).ConfigureAwait(false);
     }
 }

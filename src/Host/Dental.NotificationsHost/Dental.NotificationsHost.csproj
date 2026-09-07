@@ -1,0 +1,30 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <RootNamespace>Dental.NotificationsHost</RootNamespace>
+    <AssemblyName>Dental.NotificationsHost</AssemblyName>
+    <UserSecretsId>dental-notifications-9c17d3ee</UserSecretsId>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <NoWarn>$(NoWarn);CA1062;CA1848;CA1031;CA2007;CA1873;CA1515</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\BuildingBlocks\Web\Dental.Framework.Web.csproj" />
+    <ProjectReference Include="..\..\Modules\Notifications\Modules.Notifications\Dental.Modules.Notifications.csproj" />
+    <ProjectReference Include="..\..\Modules\Tenancy\Modules.Tenancy\Dental.Modules.Tenancy.csproj" />
+    <ProjectReference Include="..\Dental.Notifications.Migrations.PostgreSQL\Dental.Notifications.Migrations.PostgreSQL.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Design-time only: the EF tools require it on the STARTUP project to build the model. -->
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Mediator.Abstractions" />
+    <PackageReference Include="Mediator.SourceGenerator" PrivateAssets="all" />
+  </ItemGroup>
+
+</Project>

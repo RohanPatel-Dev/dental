@@ -19,7 +19,7 @@ namespace Dental.Modules.Tenancy.Features.v1.Tenants.CreateTenant;
 /// <param name="cache">Shared cache, invalidated after the write.</param>
 public sealed class CreateTenantCommandHandler(
     TenancyDbContext context,
-    IOutboxStore outbox,
+    IOutboxStore<TenancyDbContext> outbox,
     HybridCache cache) : ICommandHandler<CreateTenantCommand, TenantDto>
 {
     /// <inheritdoc />

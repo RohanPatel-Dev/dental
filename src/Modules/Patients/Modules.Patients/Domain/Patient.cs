@@ -78,8 +78,6 @@ public sealed class Patient : AggregateRoot, IAuditableEntity, ISoftDeletable
         HasMarketingConsent = marketing;
         HasReminderConsent = reminders;
         ConsentRecordedAt = now;
-
-        RaiseDomainEvent(new PatientConsentChangedDomainEvent(Id, marketing, reminders));
     }
 
     /// <summary>
@@ -109,12 +107,3 @@ public sealed class Patient : AggregateRoot, IAuditableEntity, ISoftDeletable
         Documents.Clear();
     }
 }
-
-/// <summary>Raised in-process when a patient's consent changes.</summary>
-/// <param name="PatientId">The patient.</param>
-/// <param name="HasMarketingConsent">Whether marketing contact is now permitted.</param>
-/// <param name="HasReminderConsent">Whether appointment reminders are now permitted.</param>
-public sealed record PatientConsentChangedDomainEvent(
-    Guid PatientId,
-    bool HasMarketingConsent,
-    bool HasReminderConsent) : DomainEvent;

@@ -5,8 +5,12 @@
     <AssemblyName>Dental.Framework.Eventing</AssemblyName>
   </PropertyGroup>
 
+  <!--
+    S2326 is suppressed for IOutboxStore&lt;TContext&gt;: the type parameter is deliberately a marker
+    that keeps each module's outbox store distinct in the container, not a signature parameter.
+  -->
   <PropertyGroup>
-    <NoWarn>$(NoWarn);CA1062;CA1848;CA1031;CA2007;CA1812;CA1034;CA2000;CA1873</NoWarn>
+    <NoWarn>$(NoWarn);CA1062;CA1848;CA1031;CA2007;CA1812;CA1034;CA2000;CA1873;S2326</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>

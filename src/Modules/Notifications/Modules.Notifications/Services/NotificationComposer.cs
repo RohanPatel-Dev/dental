@@ -1,6 +1,6 @@
 using System.Globalization;
 using Dental.Modules.Notifications.Contracts.Dtos;
-using Dental.Modules.Patients.Contracts.Dtos;
+using Dental.Modules.Notifications.Domain;
 using Microsoft.Extensions.Options;
 
 namespace Dental.Modules.Notifications.Services;
@@ -15,7 +15,7 @@ public sealed class NotificationComposer(IOptions<NotificationOptions> options)
     /// <param name="patient">Recipient.</param>
     /// <param name="startsAt">When the appointment starts, in UTC.</param>
     /// <returns>The subject and body.</returns>
-    public (string Subject, string Body) ComposeBooked(PatientSummaryDto patient, DateTimeOffset startsAt) =>
+    public (string Subject, string Body) ComposeBooked(PatientContact patient, DateTimeOffset startsAt) =>
         (
             "Your appointment is booked",
             Wrap(patient, $"Your appointment is booked for {Format(startsAt)}.")
@@ -26,7 +26,7 @@ public sealed class NotificationComposer(IOptions<NotificationOptions> options)
     /// <param name="startsAt">When the appointment starts, in UTC.</param>
     /// <returns>The subject and body.</returns>
     public (string Subject, string Body) ComposeReminder(
-        PatientSummaryDto patient,
+        PatientContact patient,
         DateTimeOffset startsAt) =>
         (
             "A reminder about your appointment",
@@ -37,7 +37,7 @@ public sealed class NotificationComposer(IOptions<NotificationOptions> options)
     /// <param name="patient">Recipient.</param>
     /// <param name="reason">Why it was cancelled.</param>
     /// <returns>The subject and body.</returns>
-    public (string Subject, string Body) ComposeCancelled(PatientSummaryDto patient, string reason) =>
+    public (string Subject, string Body) ComposeCancelled(PatientContact patient, string reason) =>
         (
             "Your appointment has been cancelled",
             Wrap(patient, $"Your appointment has been cancelled. Reason: {reason}.")
@@ -50,7 +50,7 @@ public sealed class NotificationComposer(IOptions<NotificationOptions> options)
     /// <param name="currency">ISO 4217 currency.</param>
     /// <returns>The subject and body.</returns>
     public (string Subject, string Body) ComposeInvoice(
-        PatientSummaryDto patient,
+        PatientContact patient,
         string number,
         decimal total,
         string currency) =>
@@ -75,7 +75,7 @@ public sealed class NotificationComposer(IOptions<NotificationOptions> options)
         _ => "notification",
     };
 
-    private string Wrap(PatientSummaryDto patient, string message) =>
+    private string Wrap(PatientContact patient, string message) =>
         $"""
          <p>Dear {patient.FullName},</p>
          <p>{message}</p>

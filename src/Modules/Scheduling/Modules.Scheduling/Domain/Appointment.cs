@@ -79,8 +79,6 @@ public sealed class Appointment : AggregateRoot, IAuditableEntity, ISoftDeletabl
         }
 
         Status = AppointmentStatus.Scheduled;
-
-        RaiseDomainEvent(new AppointmentRescheduledDomainEvent(Id, PatientId, StartsAt));
     }
 
     /// <summary>Cancels the appointment or records a non-attendance.</summary>
@@ -126,12 +124,3 @@ public sealed class Appointment : AggregateRoot, IAuditableEntity, ISoftDeletabl
         CancellationReason = null;
     }
 }
-
-/// <summary>Raised in-process when an appointment moves to a new slot.</summary>
-/// <param name="AppointmentId">The appointment.</param>
-/// <param name="PatientId">Patient it is for.</param>
-/// <param name="StartsAt">The new start time.</param>
-public sealed record AppointmentRescheduledDomainEvent(
-    Guid AppointmentId,
-    Guid PatientId,
-    DateTimeOffset StartsAt) : DomainEvent;

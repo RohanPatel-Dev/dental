@@ -1,0 +1,39 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <Sdk Name="Aspire.AppHost.Sdk" Version="13.5.3" />
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>Dental.AppHost</RootNamespace>
+    <AssemblyName>Dental.AppHost</AssemblyName>
+    <IsAspireHost>true</IsAspireHost>
+
+    <!--
+      The CLI bundle is only needed for `aspire` CLI features we do not use; `dotnet run` on this
+      project brings the stack up without it.
+    -->
+    <AspireUseCliBundle>false</AspireUseCliBundle>
+    <UserSecretsId>dental-apphost-4f8b2d90</UserSecretsId>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <NoWarn>$(NoWarn);CA1062;CA1848;CA1031;CA2007;CA1873;CA1515;CS1591;ASPIREHOSTINGPYTHON001;ASPIRE010</NoWarn>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Dental.Api\Dental.Api.csproj" />
+    <ProjectReference Include="..\Dental.DbMigrator\Dental.DbMigrator.csproj" />
+    <ProjectReference Include="..\Dental.NotificationsHost\Dental.NotificationsHost.csproj" />
+    <ProjectReference Include="..\Dental.NotificationsMigrator\Dental.NotificationsMigrator.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Aspire.Hosting.AppHost" />
+    <PackageReference Include="Aspire.Hosting.PostgreSQL" />
+    <PackageReference Include="Aspire.Hosting.Redis" />
+    <PackageReference Include="Aspire.Hosting.RabbitMQ" />
+    <PackageReference Include="Aspire.Hosting.JavaScript" />
+  </ItemGroup>
+
+</Project>

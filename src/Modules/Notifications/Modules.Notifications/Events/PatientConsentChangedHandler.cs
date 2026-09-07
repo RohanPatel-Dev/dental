@@ -2,6 +2,7 @@ using Dental.Framework.Eventing.Abstractions;
 using Dental.Modules.Notifications.Contracts.Dtos;
 using Dental.Modules.Notifications.Data;
 using Dental.Modules.Notifications.Domain;
+using Dental.Modules.Notifications.Services;
 using Dental.Modules.Patients.Contracts.Events;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -16,9 +17,11 @@ namespace Dental.Modules.Notifications.Events;
 /// A reminder queued last week and sent tomorrow is still a contact the patient has refused.
 /// </remarks>
 /// <param name="context">The notifications context.</param>
+/// <param name="projection">The local patient projection.</param>
 /// <param name="logger">Logger.</param>
 public sealed class PatientConsentChangedHandler(
     NotificationsDbContext context,
+    PatientContactProjection projection,
     ILogger<PatientConsentChangedHandler> logger)
     : IIntegrationEventHandler<PatientConsentChangedIntegrationEvent>
 {
@@ -29,8 +32,17 @@ public sealed class PatientConsentChangedHandler(
     {
         ArgumentNullException.ThrowIfNull(integrationEvent);
 
+        // The projection is updated either way: consent granted matters as much as consent withdrawn.
+        await projection.UpsertAsync(
+                integrationEvent.PatientId,
+                integrationEvent.TenantId ?? string.Empty,
+                contact => contact.HasReminderConsent = integrationEvent.HasReminderConsent,
+                cancellationToken)
+            .ConfigureAwait(false);
+
         if (integrationEvent.HasReminderConsent)
         {
+            await context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
             return;
         }
 

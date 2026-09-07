@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.Extensions.Caching.Hybrid;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -53,6 +54,15 @@ public static class CachingRegistration
                 redis.InstanceName = options.InstanceName;
                 redis.ConnectionMultiplexerFactory = () => Task.FromResult(multiplexer.Value);
             });
+
+            // The SAME multiplexer backs the DataProtection key ring, so a Redis outage degrades
+            // both consistently instead of half the application. The factory is deferred: touching
+            // .Value here would open a connection during service registration, which breaks
+            // design-time tooling and turns a cold cache into a startup failure.
+            services.AddDataProtection()
+                .PersistKeysToStackExchangeRedis(
+                    () => multiplexer.Value.GetDatabase(),
+                    "dental:dataprotection-keys");
         }
 
         services.AddHybridCache(hybrid =>

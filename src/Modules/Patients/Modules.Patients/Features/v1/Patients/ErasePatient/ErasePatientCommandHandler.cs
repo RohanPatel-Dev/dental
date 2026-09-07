@@ -27,7 +27,7 @@ namespace Dental.Modules.Patients.Features.v1.Patients.ErasePatient;
 /// <param name="logger">Logger.</param>
 public sealed class ErasePatientCommandHandler(
     PatientsDbContext context,
-    IOutboxStore outbox,
+    IOutboxStore<PatientsDbContext> outbox,
     IStorageService storage,
     TimeProvider timeProvider,
     ILogger<ErasePatientCommandHandler> logger)

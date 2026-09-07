@@ -18,14 +18,12 @@ using Dental.Framework.Web.RateLimiting;
 using Dental.Framework.Web.Realtime;
 using Dental.Framework.Web.Tenancy;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
-using StackExchange.Redis;
 
 namespace Dental.Framework.Web.Platform;
 
@@ -48,6 +46,15 @@ public static class PlatformRegistration
         HeroPlatformOptions options = new();
         configure?.Invoke(options);
 
+        // Recorded so the pipeline reads a fact instead of probing the container for scoped services.
+        builder.Services.AddSingleton(new HeroPlatformFeatures
+        {
+            Jobs = options.EnableJobs,
+            Quotas = options.EnableQuotas,
+            Sse = options.EnableSse,
+            RateLimiting = options.EnableRateLimiting,
+        });
+
         builder.AddHeroObservability();
 
         builder.Services.AddHttpContextAccessor();
@@ -55,6 +62,9 @@ public static class PlatformRegistration
         builder.Services.TryAddScoped<ICurrentUser, CurrentUser>();
         builder.Services.TryAddScoped<IRequestContext, RequestContext>();
         builder.Services.TryAddScoped<ITenantContextRestorer, TenantContextRestorer>();
+
+        // A module that knows how to expand roles into permissions replaces this.
+        builder.Services.TryAddScoped<IPermissionProvider, ClaimsPermissionProvider>();
 
         builder.Services.AddHeroPersistence(builder.Configuration);
         builder.Services.AddHeroCors(builder.Configuration);
@@ -67,40 +77,35 @@ public static class PlatformRegistration
 
         builder.Services.AddHealthChecks();
 
-        if (options.EnableCaching)
-        {
-            builder.Services.AddHeroCaching(builder.Configuration);
-            AddDataProtection(builder);
-        }
+        // These abstractions are registered in EVERY host, because feature code depends on them
+        // unconditionally: a handler cannot know which host it was loaded into. What the flags turn
+        // off is the expensive or outward-facing BEHAVIOUR, not the registration.
+        //
+        // AddHeroCaching also wires the DataProtection key ring onto the same multiplexer, and both
+        // fall back to in-memory when no Redis is configured.
+        builder.Services.AddHeroCaching(builder.Configuration);
+        builder.Services.AddHeroStorage(builder.Configuration);
+        builder.Services.AddHeroMailing();
+        builder.Services.AddHeroQuotas(builder.Configuration, options.EnableQuotas);
 
-        if (options.EnableStorage)
-        {
-            builder.Services.AddHeroStorage(builder.Configuration);
-        }
+        // Realtime SERVICES always; whether the hub is mapped is a pipeline decision, and a headless
+        // host deliberately registers without mapping.
+        AddRealtime(builder);
 
-        if (options.EnableMailing)
-        {
-            builder.Services.AddHeroMailing();
-        }
-
+        // Hangfire's client and server are genuinely expensive, and a process that must not enqueue
+        // work gets a job service whose every method throws instead.
         if (options.EnableJobs)
         {
             builder.Services.AddHeroJobs(builder.Configuration);
         }
-
-        if (options.EnableQuotas)
+        else
         {
-            builder.Services.AddHeroQuotas(builder.Configuration);
+            builder.Services.AddNoOpJobs();
         }
 
         if (options.EnableRateLimiting)
         {
             builder.Services.AddHeroRateLimiting(builder.Configuration);
-        }
-
-        if (options.EnableRealtime)
-        {
-            AddRealtime(builder);
         }
 
         if (options.EnableSse)
@@ -175,7 +180,8 @@ public static class PlatformRegistration
                 };
             });
 
-        builder.Services.AddSingleton<
+        // Scoped, not singleton: it resolves the caller's permissions through a scoped provider.
+        builder.Services.AddScoped<
             Microsoft.AspNetCore.Authorization.IAuthorizationHandler,
             PermissionAuthorizationHandler>();
 
@@ -220,19 +226,6 @@ public static class PlatformRegistration
         builder.Services.TryAddSingleton<IRealtimeNotifier, RealtimeNotifier>();
     }
 
-    private static void AddDataProtection(IHostApplicationBuilder builder)
-    {
-        string? redis = builder.Configuration[$"{nameof(CachingOptions)}:{nameof(CachingOptions.Redis)}"];
-        if (string.IsNullOrWhiteSpace(redis))
-        {
-            return;
-        }
-
-        builder.Services.AddDataProtection()
-            .PersistKeysToStackExchangeRedis(
-                new Lazy<IConnectionMultiplexer>(() => ConnectionMultiplexer.Connect(redis)).Value,
-                "dental:dataprotection-keys");
-    }
 
     /// <summary>
     /// Fails fast when production configuration is missing, BEFORE any service registration.

@@ -24,7 +24,7 @@ namespace Dental.Modules.Identity.Features.v1.Users.SetUserStatus;
 public sealed class SetUserStatusCommandHandler(
     IdentityModuleDbContext context,
     UserService userService,
-    IOutboxStore outbox,
+    IOutboxStore<IdentityModuleDbContext> outbox,
     ICurrentUser currentUser,
     TimeProvider timeProvider,
     HybridCache cache) : ICommandHandler<SetUserStatusCommand, UserDto>

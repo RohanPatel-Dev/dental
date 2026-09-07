@@ -1,4 +1,3 @@
-using System.Collections.Concurrent;
 using System.Globalization;
 using Microsoft.Extensions.Options;
 
@@ -8,17 +7,18 @@ namespace Dental.Framework.Quota;
 /// Single process quota service for development and tests. Counters live in memory, so replicas do
 /// not share them - never use this in a multi-replica deployment.
 /// </summary>
+/// <param name="counters">Process-wide counter storage, which outlives this scoped service.</param>
 /// <param name="limits">Resolves per-tenant limits.</param>
 /// <param name="gauges">Gauge providers.</param>
 /// <param name="options">Quota configuration.</param>
 /// <param name="timeProvider">Clock.</param>
 public sealed class InMemoryQuotaService(
+    InMemoryQuotaCounterStore counters,
     IQuotaLimitProvider limits,
     IEnumerable<IQuotaGaugeProvider> gauges,
     IOptions<QuotaOptions> options,
     TimeProvider timeProvider) : IQuotaService
 {
-    private readonly ConcurrentDictionary<string, long> _counters = new(StringComparer.Ordinal);
     private readonly QuotaOptions _options = options.Value;
     private readonly IReadOnlyList<IQuotaGaugeProvider> _gauges = [.. gauges];
 
@@ -39,11 +39,12 @@ public sealed class InMemoryQuotaService(
 
         (string key, DateTimeOffset windowEnd) = BuildWindowKey(tenantId, resource);
 
-        long used = _counters.AddOrUpdate(key, units, (_, existing) => existing + units);
+        long used = counters.Add(key, units);
 
         if (limit > 0 && used > limit)
         {
-            _counters.AddOrUpdate(key, 0, (_, existing) => existing - units);
+            // Roll the failed charge back so a refused request does not eat the tenant's budget.
+            counters.Add(key, -units);
             return new QuotaUsage(resource, limit, limit, windowEnd);
         }
 
@@ -65,9 +66,8 @@ public sealed class InMemoryQuotaService(
         }
 
         (string key, DateTimeOffset windowEnd) = BuildWindowKey(tenantId, resource);
-        _counters.TryGetValue(key, out long used);
 
-        return new QuotaUsage(resource, used, limit, windowEnd);
+        return new QuotaUsage(resource, counters.Read(key), limit, windowEnd);
     }
 
     /// <inheritdoc />

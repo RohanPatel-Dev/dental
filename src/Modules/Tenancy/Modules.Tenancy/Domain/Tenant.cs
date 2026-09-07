@@ -57,7 +57,6 @@ public sealed class Tenant : AggregateRoot, IGlobalEntity, IAuditableEntity, ISo
         }
 
         IsActive = false;
-        RaiseDomainEvent(new TenantDeactivatedDomainEvent(Id, Identifier, reason));
     }
 
     /// <summary>Reactivates the tenant.</summary>
@@ -71,10 +70,3 @@ public sealed class Tenant : AggregateRoot, IGlobalEntity, IAuditableEntity, ISo
         PlanName = planName;
     }
 }
-
-/// <summary>Raised in-process when a tenant is deactivated.</summary>
-/// <param name="TenantKey">Identifier of the deactivated tenant.</param>
-/// <param name="Identifier">The tenant's slug.</param>
-/// <param name="Reason">Why it was deactivated.</param>
-public sealed record TenantDeactivatedDomainEvent(Guid TenantKey, string Identifier, string Reason)
-    : DomainEvent;

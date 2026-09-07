@@ -14,10 +14,15 @@ public static class QuotaRegistration
     /// </summary>
     /// <param name="services">Service collection.</param>
     /// <param name="configuration">Application configuration.</param>
+    /// <param name="enforce">
+    /// When false, an unlimited implementation is registered instead. The abstraction is always
+    /// present, because feature code depends on it in every host.
+    /// </param>
     /// <returns>The service collection, for chaining.</returns>
     public static IServiceCollection AddHeroQuotas(
         this IServiceCollection services,
-        IConfiguration configuration)
+        IConfiguration configuration,
+        bool enforce = true)
     {
         ArgumentNullException.ThrowIfNull(services);
         ArgumentNullException.ThrowIfNull(configuration);
@@ -30,15 +35,25 @@ public static class QuotaRegistration
         services.TryAddSingleton(TimeProvider.System);
         services.TryAddSingleton<IQuotaLimitProvider, NoQuotaLimitProvider>();
 
+        if (!enforce)
+        {
+            services.TryAddSingleton<IQuotaService, UnlimitedQuotaService>();
+            return services;
+        }
+
         bool hasRedis = services.Any(d => d.ServiceType == typeof(IConnectionMultiplexer));
 
+        // SCOPED, not singleton: the limit provider reads the tenant's plan through a scoped module
+        // service, and a singleton cannot consume one. Anything that must outlive the request -
+        // the in-memory counters - lives in its own singleton instead.
         if (hasRedis)
         {
-            services.TryAddSingleton<IQuotaService, RedisQuotaService>();
+            services.TryAddScoped<IQuotaService, RedisQuotaService>();
         }
         else
         {
-            services.TryAddSingleton<IQuotaService, InMemoryQuotaService>();
+            services.TryAddSingleton<InMemoryQuotaCounterStore>();
+            services.TryAddScoped<IQuotaService, InMemoryQuotaService>();
         }
 
         return services;

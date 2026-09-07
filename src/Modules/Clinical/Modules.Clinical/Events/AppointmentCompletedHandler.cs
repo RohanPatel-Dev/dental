@@ -23,7 +23,7 @@ namespace Dental.Modules.Clinical.Events;
 /// <param name="logger">Logger.</param>
 public sealed class AppointmentCompletedHandler(
     ClinicalDbContext context,
-    IOutboxStore outbox,
+    IOutboxStore<ClinicalDbContext> outbox,
     ILogger<AppointmentCompletedHandler> logger)
     : IIntegrationEventHandler<AppointmentCompletedIntegrationEvent>
 {
