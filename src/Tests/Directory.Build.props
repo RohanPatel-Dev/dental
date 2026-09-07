@@ -1,0 +1,31 @@
+<Project>
+
+  <!-- Inherit everything from src/Directory.Build.props, then add the test-only settings. -->
+  <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))" />
+
+  <PropertyGroup>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+
+    <!--
+      xunit.v3 runs on Microsoft.Testing.Platform, which the .NET 10 SDK no longer bridges to VSTest.
+      The test project is therefore an executable, and `dotnet test` needs to be told to use the new
+      protocol. Without these two lines the run fails with a VSTest deprecation error rather than a
+      test result.
+    -->
+    <OutputType>Exe</OutputType>
+    <TestingPlatformDotnetTestSupport>true</TestingPlatformDotnetTestSupport>
+    <UseMicrosoftTestingPlatformRunner>true</UseMicrosoftTestingPlatformRunner>
+
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <!--
+      Test-name readability beats these rules: CA1707 forbids the underscores that make
+      Method_Should_Behaviour_When_Condition readable, and S2699 cannot see Shouldly's assertions.
+    -->
+    <NoWarn>$(NoWarn);CA1707;CA1062;CA1861;CA2007;CA1515;CS1591;S2699;S1192;CA1848;CA1873;S4144</NoWarn>
+  </PropertyGroup>
+
+</Project>

@@ -29,7 +29,12 @@ public static class PipelineRegistration
     public static IApplicationBuilder UseHeroMultiTenantDatabases(this IApplicationBuilder app)
     {
         ArgumentNullException.ThrowIfNull(app);
-        return app.UseMultiTenant();
+
+        app.UseMultiTenant();
+
+        // Straight after resolution, while the request still knows what it asked for: a header that
+        // names a tenant nobody has must not fall through to root.
+        return app.UseMiddleware<UnknownTenantMiddleware>();
     }
 
     /// <summary>

@@ -100,11 +100,14 @@ public sealed class Invoice : AggregateRoot, IAuditableEntity, ISoftDeletable
             throw new ConflictException($"An invoice that is {Status} cannot take a payment.");
         }
 
-        // Amounts are Money so a currency mismatch throws here rather than producing a wrong total.
         Money outstanding = new(Balance, Currency);
         Money received = new(payment.Amount, payment.Currency);
 
-        if (received.Amount > outstanding.Amount)
+        // Subtracting through Money is what enforces the currency match: a EUR payment against a
+        // USD invoice throws here instead of being counted at face value against the balance.
+        Money remaining = outstanding.Subtract(received);
+
+        if (remaining.Amount < 0)
         {
             throw new ConflictException(
                 $"The payment of {received} exceeds the outstanding balance of {outstanding}.");

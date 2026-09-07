@@ -1,4 +1,5 @@
 using Dental.Framework.Shared.Identity;
+using Dental.Framework.Shared.Tenancy;
 using Dental.Modules.Identity.Domain;
 using Dental.Modules.Identity.Services;
 using Microsoft.AspNetCore.Identity;
@@ -47,7 +48,7 @@ public sealed class IdentitySeeder(
 
             context.Roles.Add(role);
 
-            foreach (string permission in PermissionsFor(roleName))
+            foreach (string permission in PermissionsFor(roleName, tenantId))
             {
                 context.RoleClaims.Add(UserService.ToRoleClaim(role.Id, permission));
             }
@@ -126,8 +127,17 @@ public sealed class IdentitySeeder(
         _ => "Custom role.",
     };
 
-    private static IEnumerable<string> PermissionsFor(string roleName) => roleName switch
+    /// <remarks>
+    /// The root tenant's administrator is the only account that gets the root-only permissions -
+    /// the tenant catalog is administered from there. Without this, the operator permissions are
+    /// declared by Tenancy but granted to nobody, and no practice can ever be created through the
+    /// API.
+    /// </remarks>
+    private static IEnumerable<string> PermissionsFor(string roleName, string tenantId) => roleName switch
     {
+        DentalRoles.Admin when string.Equals(tenantId, TenantConstants.RootTenant, StringComparison.Ordinal) =>
+            PermissionConstants.All.Select(p => p.Value),
+
         DentalRoles.Admin => PermissionConstants.Admin.Select(p => p.Value),
 
         DentalRoles.Clinician => PermissionConstants.Admin

@@ -1,0 +1,28 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <RootNamespace>Dental.Integration.Middleware.Tests</RootNamespace>
+    <AssemblyName>Dental.Integration.Middleware.Tests</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+
+  <!--
+    Middleware is tested against a hand-built pipeline rather than the API host: these tests are
+    about ORDER and behaviour of the components themselves, and pulling in the host would drag a
+    database and a module graph into what should be a millisecond test.
+  -->
+  <ItemGroup>
+    <ProjectReference Include="..\..\BuildingBlocks\Web\Dental.Framework.Web.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="xunit.v3" />
+    <PackageReference Include="Shouldly" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" />
+    <PackageReference Include="coverlet.collector" />
+  </ItemGroup>
+
+</Project>

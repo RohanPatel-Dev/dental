@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Coverage settings shared by every test project.
+
+  Generated code is excluded, not because it is uninteresting but because it is not ours to fix:
+  EF migrations and the Mediator source generator produce thousands of lines that would swamp the
+  figure and hide the parts a person actually wrote.
+-->
+<RunSettings>
+  <DataCollectionRunSettings>
+    <DataCollectors>
+      <DataCollector friendlyName="XPlat code coverage">
+        <Configuration>
+          <Format>cobertura</Format>
+          <ExcludeByAttribute>Obsolete,GeneratedCodeAttribute,CompilerGeneratedAttribute,ExcludeFromCodeCoverageAttribute</ExcludeByAttribute>
+          <Exclude>[*.Tests]*,[*]Dental.Migrations.PostgreSQL.*,[*]Dental.Notifications.Migrations.PostgreSQL.*</Exclude>
+          <ExcludeByFile>**/Migrations/*.cs,**/*.Designer.cs,**/*ModelSnapshot.cs,**/obj/**</ExcludeByFile>
+          <SkipAutoProps>true</SkipAutoProps>
+          <DeterministicReport>true</DeterministicReport>
+        </Configuration>
+      </DataCollector>
+    </DataCollectors>
+  </DataCollectionRunSettings>
+</RunSettings>

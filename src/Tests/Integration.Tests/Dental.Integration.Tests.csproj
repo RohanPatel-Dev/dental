@@ -1,0 +1,35 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <RootNamespace>Dental.Integration.Tests</RootNamespace>
+    <AssemblyName>Dental.Integration.Tests</AssemblyName>
+
+    <!--
+      CA2100: the fixture issues CREATE/DROP DATABASE for names it generates itself. DDL cannot take
+      parameters, and no caller supplies the name.
+    -->
+    <NoWarn>$(NoWarn);CA2100</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+
+  <!--
+    The real composition root, against a real Postgres in a container. Nothing is substituted: a
+    test that stubs the database cannot catch a broken query filter, which is the class of bug this
+    suite exists for.
+  -->
+  <ItemGroup>
+    <ProjectReference Include="..\..\Host\Dental.Api\Dental.Api.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="xunit.v3" />
+    <PackageReference Include="Shouldly" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" />
+    <PackageReference Include="Testcontainers.PostgreSql" />
+    <PackageReference Include="coverlet.collector" />
+  </ItemGroup>
+
+</Project>

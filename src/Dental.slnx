@@ -99,4 +99,26 @@
   <Folder Name="/Modules/Tenancy/Modules.Tenancy/">
     <Project Path="Modules/Tenancy/Modules.Tenancy/Dental.Modules.Tenancy.csproj" />
   </Folder>
+  <Folder Name="/Tests/" />
+  <Folder Name="/Tests/Architecture.Tests/">
+    <Project Path="Tests/Architecture.Tests/Dental.Architecture.Tests.csproj" />
+  </Folder>
+  <Folder Name="/Tests/Framework.Tests/">
+    <Project Path="Tests/Framework.Tests/Dental.Framework.Tests.csproj" />
+  </Folder>
+  <Folder Name="/Tests/Integration.Tests/">
+    <Project Path="Tests/Integration.Tests/Dental.Integration.Tests.csproj" />
+  </Folder>
+  <Folder Name="/Tests/Integration.Middleware.Tests/">
+    <Project Path="Tests/Integration.Middleware.Tests/Dental.Integration.Middleware.Tests.csproj" />
+  </Folder>
+  <Folder Name="/Tests/Modules.Billing.Tests/">
+    <Project Path="Tests/Modules.Billing.Tests/Dental.Modules.Billing.Tests.csproj" />
+  </Folder>
+  <Folder Name="/Tests/Modules.Patients.Tests/">
+    <Project Path="Tests/Modules.Patients.Tests/Dental.Modules.Patients.Tests.csproj" />
+  </Folder>
+  <Folder Name="/Tests/Modules.Scheduling.Tests/">
+    <Project Path="Tests/Modules.Scheduling.Tests/Dental.Modules.Scheduling.Tests.csproj" />
+  </Folder>
 </Solution>

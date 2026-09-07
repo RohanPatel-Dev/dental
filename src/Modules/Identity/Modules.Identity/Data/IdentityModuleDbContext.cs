@@ -72,7 +72,39 @@ public sealed class IdentityModuleDbContext(
 
         builder.ApplyDentalConventions();
 
+        MakeIdentityIndexesTenantScoped(builder);
+
         // LAST: installs Finbuckle's anonymous tenant filter over everything marked above.
         builder.ConfigureMultiTenant();
+    }
+
+    /// <summary>
+    /// Drops the global unique indexes ASP.NET Identity declares on its own.
+    /// </summary>
+    /// <remarks>
+    /// Identity makes <c>RoleNameIndex</c> and <c>UserNameIndex</c> unique on the normalized name
+    /// ALONE. In a shared-schema multi-tenant store that means the second practice provisioned
+    /// cannot have a role called "Admin", and no two practices can employ the same email address -
+    /// the insert fails on a unique violation that mentions nothing about tenancy. The tenant
+    /// scoped replacements already exist in <c>IdentityConfigurations</c>
+    /// (<c>ux_roles_tenant_name</c> and <c>ux_users_tenant_email</c>); these two just have to go.
+    /// </remarks>
+    /// <param name="builder">The model builder.</param>
+    private static void MakeIdentityIndexesTenantScoped(ModelBuilder builder)
+    {
+        RemoveIndex<DentalRole>(builder, nameof(DentalRole.NormalizedName));
+        RemoveIndex<DentalUser>(builder, nameof(DentalUser.NormalizedUserName));
+    }
+
+    private static void RemoveIndex<TEntity>(ModelBuilder builder, string propertyName)
+        where TEntity : class
+    {
+        Microsoft.EntityFrameworkCore.Metadata.IMutableEntityType entity =
+            builder.Entity<TEntity>().Metadata;
+
+        if (entity.FindIndex(entity.GetProperty(propertyName)) is { } index)
+        {
+            entity.RemoveIndex(index);
+        }
     }
 }
