@@ -41,12 +41,47 @@
   <Folder Name="/Modules/Auditing/Modules.Auditing/">
     <Project Path="Modules/Auditing/Modules.Auditing/Dental.Modules.Auditing.csproj" />
   </Folder>
+  <Folder Name="/Modules/Billing/" />
+  <Folder Name="/Modules/Billing/Modules.Billing.Contracts/">
+    <Project Path="Modules/Billing/Modules.Billing.Contracts/Dental.Modules.Billing.Contracts.csproj" />
+  </Folder>
+  <Folder Name="/Modules/Billing/Modules.Billing/">
+    <Project Path="Modules/Billing/Modules.Billing/Dental.Modules.Billing.csproj" />
+  </Folder>
+  <Folder Name="/Modules/Clinical/" />
+  <Folder Name="/Modules/Clinical/Modules.Clinical.Contracts/">
+    <Project Path="Modules/Clinical/Modules.Clinical.Contracts/Dental.Modules.Clinical.Contracts.csproj" />
+  </Folder>
+  <Folder Name="/Modules/Clinical/Modules.Clinical/">
+    <Project Path="Modules/Clinical/Modules.Clinical/Dental.Modules.Clinical.csproj" />
+  </Folder>
   <Folder Name="/Modules/Identity/" />
   <Folder Name="/Modules/Identity/Modules.Identity.Contracts/">
     <Project Path="Modules/Identity/Modules.Identity.Contracts/Dental.Modules.Identity.Contracts.csproj" />
   </Folder>
   <Folder Name="/Modules/Identity/Modules.Identity/">
     <Project Path="Modules/Identity/Modules.Identity/Dental.Modules.Identity.csproj" />
+  </Folder>
+  <Folder Name="/Modules/Notifications/" />
+  <Folder Name="/Modules/Notifications/Modules.Notifications.Contracts/">
+    <Project Path="Modules/Notifications/Modules.Notifications.Contracts/Dental.Modules.Notifications.Contracts.csproj" />
+  </Folder>
+  <Folder Name="/Modules/Notifications/Modules.Notifications/">
+    <Project Path="Modules/Notifications/Modules.Notifications/Dental.Modules.Notifications.csproj" />
+  </Folder>
+  <Folder Name="/Modules/Patients/" />
+  <Folder Name="/Modules/Patients/Modules.Patients.Contracts/">
+    <Project Path="Modules/Patients/Modules.Patients.Contracts/Dental.Modules.Patients.Contracts.csproj" />
+  </Folder>
+  <Folder Name="/Modules/Patients/Modules.Patients/">
+    <Project Path="Modules/Patients/Modules.Patients/Dental.Modules.Patients.csproj" />
+  </Folder>
+  <Folder Name="/Modules/Scheduling/" />
+  <Folder Name="/Modules/Scheduling/Modules.Scheduling.Contracts/">
+    <Project Path="Modules/Scheduling/Modules.Scheduling.Contracts/Dental.Modules.Scheduling.Contracts.csproj" />
+  </Folder>
+  <Folder Name="/Modules/Scheduling/Modules.Scheduling/">
+    <Project Path="Modules/Scheduling/Modules.Scheduling/Dental.Modules.Scheduling.csproj" />
   </Folder>
   <Folder Name="/Modules/Tenancy/" />
   <Folder Name="/Modules/Tenancy/Modules.Tenancy.Contracts/">

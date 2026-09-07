@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <RootNamespace>Dental.Modules.Clinical.Contracts</RootNamespace>
+    <AssemblyName>Dental.Modules.Clinical.Contracts</AssemblyName>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <NoWarn>$(NoWarn);CA1034;CA1724;CA2227</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\BuildingBlocks\Eventing.Abstractions\Dental.Framework.Eventing.Abstractions.csproj" />
+    <ProjectReference Include="..\..\..\BuildingBlocks\Shared\Dental.Framework.Shared.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Mediator.Abstractions" />
+  </ItemGroup>
+
+</Project>
