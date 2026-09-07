@@ -1,0 +1,152 @@
+# A single-machine deployment: everything the system needs, nothing it does not.
+#
+# For local development prefer `dotnet run --project src/Host/Dental.AppHost` - Aspire gives you the
+# same topology plus dashboards, log streaming and no image builds. This file is for a demo box, a
+# CI environment, or a small practice running on one server.
+
+name: dental
+
+services:
+  postgres:
+    image: postgres:18-alpine
+    environment:
+      POSTGRES_USER: dental
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD}
+      POSTGRES_DB: dental
+    volumes:
+      - postgres:/var/lib/postgresql/data
+      - ./initdb:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U dental']
+      interval: 5s
+      retries: 20
+
+  valkey:
+    image: valkey/valkey:9-alpine
+    command: ['valkey-server', '--save', '60', '1']
+    volumes:
+      - valkey:/data
+    healthcheck:
+      test: ['CMD', 'valkey-cli', 'ping']
+      interval: 5s
+      retries: 20
+
+  rabbitmq:
+    image: rabbitmq:4-management-alpine
+    environment:
+      RABBITMQ_DEFAULT_USER: dental
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD:?set RABBITMQ_PASSWORD}
+    healthcheck:
+      test: ['CMD', 'rabbitmq-diagnostics', '-q', 'ping']
+      interval: 10s
+      retries: 20
+
+  minio:
+    image: minio/minio:latest
+    command: ['server', '/data', '--console-address', ':9001']
+    environment:
+      MINIO_ROOT_USER: dental
+      MINIO_ROOT_PASSWORD: ${MINIO_PASSWORD:?set MINIO_PASSWORD}
+    volumes:
+      - minio:/data
+
+  # Runs to completion before anything serves a request. The advisory lock makes a repeat safe.
+  migrator:
+    build:
+      context: ../..
+      dockerfile: deploy/docker/Dockerfile.migrator
+    environment:
+      DatabaseOptions__ConnectionString: Host=postgres;Database=dental;Username=dental;Password=${POSTGRES_PASSWORD}
+      IdentitySeedOptions__AdminPassword: ${ADMIN_PASSWORD:?set ADMIN_PASSWORD}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: 'no'
+
+  api:
+    build:
+      context: ../..
+      dockerfile: deploy/docker/Dockerfile.api
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      DatabaseOptions__ConnectionString: Host=postgres;Database=dental;Username=dental;Password=${POSTGRES_PASSWORD}
+      JobOptions__ConnectionString: Host=postgres;Database=dental_hangfire_api;Username=dental;Password=${POSTGRES_PASSWORD}
+      JobOptions__DashboardPassword: ${JOBS_DASHBOARD_PASSWORD:?set JOBS_DASHBOARD_PASSWORD}
+      CachingOptions__Redis: valkey:6379
+      EventingOptions__Provider: RabbitMq
+      EventingOptions__RabbitMq: amqp://dental:${RABBITMQ_PASSWORD}@rabbitmq:5672
+      JwtOptions__SigningKey: ${JWT_SIGNING_KEY:?set JWT_SIGNING_KEY}
+      IdentitySeedOptions__AdminPassword: ${ADMIN_PASSWORD}
+      Storage__Provider: s3
+      Storage__ServiceUrl: http://minio:9000
+      Storage__AccessKey: dental
+      Storage__SecretKey: ${MINIO_PASSWORD}
+    ports:
+      - '8080:8080'
+    depends_on:
+      migrator:
+        condition: service_completed_successfully
+      valkey:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+
+  # The extracted module: its own process, its own database, its own migrator - reached only by
+  # events over RabbitMQ.
+  notifications-migrator:
+    build:
+      context: ../..
+      dockerfile: deploy/docker/Dockerfile.migrator
+    command: ['apply']
+    environment:
+      DatabaseOptions__ConnectionString: Host=postgres;Database=dental_notifications;Username=dental;Password=${POSTGRES_PASSWORD}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: 'no'
+
+  notifications:
+    build:
+      context: ../..
+      dockerfile: deploy/docker/Dockerfile.notifications
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      DatabaseOptions__ConnectionString: Host=postgres;Database=dental_notifications;Username=dental;Password=${POSTGRES_PASSWORD}
+      JobOptions__ConnectionString: Host=postgres;Database=dental_hangfire_notifications;Username=dental;Password=${POSTGRES_PASSWORD}
+      JobOptions__DashboardPassword: ${JOBS_DASHBOARD_PASSWORD}
+      CachingOptions__Redis: valkey:6379
+      EventingOptions__Provider: RabbitMq
+      EventingOptions__RabbitMq: amqp://dental:${RABBITMQ_PASSWORD}@rabbitmq:5672
+      JwtOptions__SigningKey: ${JWT_SIGNING_KEY}
+    depends_on:
+      notifications-migrator:
+        condition: service_completed_successfully
+      rabbitmq:
+        condition: service_healthy
+
+  admin:
+    build:
+      context: ../..
+      dockerfile: deploy/docker/Dockerfile.spa
+      args:
+        APP: admin
+    volumes:
+      - ./config/admin.config.json:/usr/share/nginx/html/config.json:ro
+    ports:
+      - '5173:8080'
+
+  dashboard:
+    build:
+      context: ../..
+      dockerfile: deploy/docker/Dockerfile.spa
+      args:
+        APP: dashboard
+    volumes:
+      - ./config/dashboard.config.json:/usr/share/nginx/html/config.json:ro
+    ports:
+      - '5174:8080'
+
+volumes:
+  postgres:
+  valkey:
+  minio:

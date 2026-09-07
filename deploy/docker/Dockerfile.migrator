@@ -1,0 +1,31 @@
+# The migrator. Built from the same source tree as the API so the two cannot disagree about the
+# model they were compiled against. Run it to completion BEFORE rolling the API.
+FROM mcr.microsoft.com/dotnet/sdk:10.0-noble AS build
+WORKDIR /source
+
+# Restore on the project graph alone, so a source-only change reuses the cached layer.
+COPY global.json ./
+COPY src/Directory.Build.props src/Directory.Packages.props src/Dental.slnx ./src/
+COPY src/BuildingBlocks/ ./src/BuildingBlocks/
+COPY src/Modules/ ./src/Modules/
+COPY src/Host/ ./src/Host/
+COPY src/Tests/Directory.Build.props ./src/Tests/
+
+RUN dotnet restore src/Host/Dental.DbMigrator/Dental.DbMigrator.csproj
+
+RUN dotnet publish src/Host/Dental.DbMigrator/Dental.DbMigrator.csproj \
+    --no-restore -c Release -o /app
+
+FROM mcr.microsoft.com/dotnet/aspnet:10.0-noble AS final
+WORKDIR /app
+
+# Not root: the host serves untrusted input and needs nothing a privileged user has.
+RUN useradd --uid 64198 --create-home dental
+USER 64198
+
+COPY --from=build --chown=64198 /app .
+
+# This image runs to completion and exits: no port, no health check. It takes a Postgres advisory
+# lock for the whole run, so several replicas starting at once is safe - they queue.
+ENTRYPOINT ["dotnet", "Dental.DbMigrator.dll"]
+CMD ["apply", "--seed"]

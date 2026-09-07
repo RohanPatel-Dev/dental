@@ -1,0 +1,7 @@
+{
+  "apiBaseUrl": "http://localhost:8080/api/v1",
+  "realtimeUrl": "http://localhost:8080/api/v1/realtime/hub",
+  "tenant": "root",
+  "environment": "compose",
+  "features": { "realtime": true }
+}

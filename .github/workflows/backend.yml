@@ -1,0 +1,90 @@
+name: backend
+
+# Path-scoped: a change under clients/ has nothing to say about the .NET build, and running both
+# pipelines on every commit just teaches people to ignore the red one.
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'src/**'
+      - 'global.json'
+      - '.config/dotnet-tools.json'
+      - '.github/workflows/backend.yml'
+  pull_request:
+    paths:
+      - 'src/**'
+      - 'global.json'
+      - '.config/dotnet-tools.json'
+      - '.github/workflows/backend.yml'
+
+concurrency:
+  group: backend-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-dotnet@v5
+        with:
+          global-json-file: global.json
+
+      - name: Cache NuGet
+        uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: nuget-${{ runner.os }}-${{ hashFiles('src/Directory.Packages.props') }}
+          restore-keys: nuget-${{ runner.os }}-
+
+      - run: dotnet tool restore
+      - run: dotnet restore src/Dental.slnx
+
+      # Warnings are errors in Directory.Build.props; this makes that explicit at the CI boundary.
+      - name: Build
+        run: dotnet build src/Dental.slnx --no-restore -warnaserror
+
+      - name: Architecture rules
+        run: dotnet test --project src/Tests/Architecture.Tests/Dental.Architecture.Tests.csproj --no-build
+
+      - name: Unit tests
+        run: |
+          for project in \
+            src/Tests/Framework.Tests/Dental.Framework.Tests.csproj \
+            src/Tests/Modules.Patients.Tests/Dental.Modules.Patients.Tests.csproj \
+            src/Tests/Modules.Scheduling.Tests/Dental.Modules.Scheduling.Tests.csproj \
+            src/Tests/Modules.Billing.Tests/Dental.Modules.Billing.Tests.csproj \
+            src/Tests/Integration.Middleware.Tests/Dental.Integration.Middleware.Tests.csproj
+          do
+            dotnet test --project "$project" --no-build
+          done
+
+      # Testcontainers starts its own Postgres; the runner already has a Docker daemon.
+      - name: Integration tests
+        run: dotnet test --project src/Tests/Integration.Tests/Dental.Integration.Tests.csproj --no-build
+
+      # A model change without a migration is a deployment that fails on the first query. This
+      # compares the compiled model against the snapshot and needs no database at all.
+      - name: Model matches its migrations
+        run: |
+          for context in TenancyDbContext IdentityModuleDbContext AuditingDbContext \
+                         PatientsDbContext SchedulingDbContext ClinicalDbContext BillingDbContext
+          do
+            dotnet ef migrations has-pending-model-changes \
+              --project         src/Host/Dental.Migrations.PostgreSQL \
+              --startup-project src/Host/Dental.Api \
+              --context         "$context" \
+              --no-build
+          done
+
+          dotnet ef migrations has-pending-model-changes \
+            --project         src/Host/Dental.Notifications.Migrations.PostgreSQL \
+            --startup-project src/Host/Dental.NotificationsHost \
+            --context         NotificationsDbContext \
+            --no-build

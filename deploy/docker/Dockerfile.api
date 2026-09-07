@@ -1,0 +1,35 @@
+# Build once, run anywhere. The migrator image is built from the same base so the two can never
+# disagree about the model they were compiled against.
+FROM mcr.microsoft.com/dotnet/sdk:10.0-noble AS build
+WORKDIR /source
+
+# Restore on the project graph alone, so a source-only change reuses the cached layer.
+COPY global.json ./
+COPY src/Directory.Build.props src/Directory.Packages.props src/Dental.slnx ./src/
+COPY src/BuildingBlocks/ ./src/BuildingBlocks/
+COPY src/Modules/ ./src/Modules/
+COPY src/Host/ ./src/Host/
+COPY src/Tests/Directory.Build.props ./src/Tests/
+
+RUN dotnet restore src/Host/Dental.Api/Dental.Api.csproj
+
+RUN dotnet publish src/Host/Dental.Api/Dental.Api.csproj \
+    --no-restore -c Release -o /app
+
+FROM mcr.microsoft.com/dotnet/aspnet:10.0-noble AS final
+WORKDIR /app
+
+# Not root: the host serves untrusted input and needs nothing a privileged user has.
+RUN useradd --uid 64198 --create-home dental
+USER 64198
+
+COPY --from=build --chown=64198 /app .
+
+ENV ASPNETCORE_HTTP_PORTS=8080 \
+    DOTNET_gcServer=1
+EXPOSE 8080
+
+# No HEALTHCHECK here on purpose: the runtime image ships no shell tools to probe with, and the
+# orchestrator already probes /alive (liveness, touches no dependency) and /ready (readiness, checks
+# every module's database) over HTTP. A container-level check would only duplicate them badly.
+ENTRYPOINT ["dotnet", "Dental.Api.dll"]
