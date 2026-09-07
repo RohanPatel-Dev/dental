@@ -1,0 +1,9 @@
+{
+  "apiBaseUrl": "/api/v1",
+  "realtimeUrl": "/api/v1/realtime/hub",
+  "tenant": null,
+  "environment": "development",
+  "features": {
+    "realtime": true
+  }
+}

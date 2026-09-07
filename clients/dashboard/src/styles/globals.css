@@ -1,0 +1,73 @@
+@import 'tailwindcss';
+
+/*
+  Tailwind v4 is CSS-first: the design tokens ARE the config. There is no tailwind.config.js, and a
+  token added here is immediately available as a utility (bg-surface, text-muted, ...).
+*/
+@theme {
+  --color-canvas: oklch(98.5% 0.002 250);
+  --color-surface: oklch(100% 0 0);
+  --color-border: oklch(91% 0.005 250);
+  --color-ink: oklch(24% 0.02 260);
+  --color-muted: oklch(52% 0.015 260);
+  --color-accent: oklch(52% 0.12 190);
+  --color-accent-ink: oklch(99% 0 0);
+  --color-danger: oklch(56% 0.19 27);
+  --color-success: oklch(62% 0.14 152);
+
+  --radius-card: 0.75rem;
+  --font-sans: 'Inter var', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+}
+
+/* The dark palette redefines the same tokens, so every utility follows without a dark: variant. */
+@media (prefers-color-scheme: dark) {
+  @theme {
+    --color-canvas: oklch(20% 0.015 260);
+    --color-surface: oklch(25% 0.018 260);
+    --color-border: oklch(33% 0.02 260);
+    --color-ink: oklch(96% 0.005 260);
+    --color-muted: oklch(72% 0.015 260);
+    --color-accent-ink: oklch(20% 0.015 260);
+  }
+}
+
+@layer base {
+  html,
+  body {
+    @apply h-full bg-canvas text-ink;
+    font-family: var(--font-sans);
+  }
+
+  :focus-visible {
+    @apply outline-2 outline-offset-2 outline-accent;
+  }
+}
+
+/*
+  Custom utilities, not @layer components: in Tailwind v4 only a @utility can be composed with
+  @apply, so declaring `btn` in a component layer would make `@apply btn` an unknown-class error.
+*/
+@utility card {
+  @apply rounded-xl border border-border bg-surface;
+}
+
+@utility btn {
+  @apply inline-flex items-center justify-center gap-2 rounded-md px-3 py-2 text-sm font-medium
+    transition-colors disabled:cursor-not-allowed disabled:opacity-50;
+}
+
+@utility btn-primary {
+  @apply btn bg-accent text-accent-ink hover:opacity-90;
+}
+
+@utility btn-ghost {
+  @apply btn border border-border hover:bg-canvas;
+}
+
+@utility field {
+  @apply w-full rounded-md border border-border bg-surface px-3 py-2 text-sm placeholder:text-muted;
+}
+
+@utility label {
+  @apply mb-1 block text-sm font-medium;
+}
